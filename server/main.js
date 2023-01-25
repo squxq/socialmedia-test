@@ -10,8 +10,13 @@ const path = require(`path`)
 const { fileURLToPath } = require(`url`)
 const authRoutes = require(`./routes/auth`)
 const userRoutes = require(`./routes/user`)
-// const postRoutes = require(`./routes/post`)
+const postRoutes = require(`./routes/posts`)
 const { register } = require("./controllers/auth")
+const { createPost } = require("./controllers/posts")
+const verifyToken = require("./middleware/auth")
+const { users, posts } = require("./data/index")
+const User = require("./models/User")
+const Post = require("./models/Post")
 
 // configuration
 dotenv.config()
@@ -38,11 +43,12 @@ const upload = multer({ storage })
 
 // routes with files
 app.post("/auth/register", upload.single("picture"), register)
+app.post("/posts", verifyToken, upload.single("picture"), createPost)
 
 // routes
 app.use("/auth", authRoutes)
 app.use("/users", userRoutes)
-// app.use("/posts", postRoutes)
+app.use("/posts", postRoutes)
 
 // mongoose setup
 const port = process.env.PORT || 9000
@@ -53,6 +59,10 @@ mongoose
     app.listen(port, () =>
       console.log(`Server is connected to db and listening on port ${port}...`)
     )
+
+    // One time inserts
+    // User.insertMany(users)
+    // Post.insertMany(posts)
   })
   .catch((err) =>
     console.log(
